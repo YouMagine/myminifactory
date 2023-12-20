@@ -40,7 +40,7 @@ RSpec.describe OmniAuth::Strategies::MyMiniFactory do
       stub_request(:post, "https://auth.myminifactory.com/v1/oauth/mobile/login")
         .to_return(status: 200, body: "", headers: {})
 
-      subject.mobile_login('access_token', { device_id: '1234' })
+      subject.send(:mobile_login, 'access_token', { device_id: '1234' })
 
       expect(a_request(:post, "https://auth.myminifactory.com/v1/oauth/mobile/login")
         .with(body: hash_including({

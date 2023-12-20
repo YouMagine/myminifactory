@@ -21,6 +21,7 @@ module OmniAuth
         }
       end
 
+      # Override necessary to deal with custom logic
       def request_phase
         super
       end
@@ -29,13 +30,14 @@ module OmniAuth
         super
       end
 
+      protected
+
       def raw_info
-        # Define logic to fetch user information
+        @raw_info ||= access_token.get("/user").parsed
       end
 
       def mobile_login(access_token, device_info)
-        site = 'https://auth.myminifactory.com' # Temporary hardcoding for debugging
-        response = client.request(:post, site + '/v1/oauth/mobile/login', {
+        response = client.request(:post, "#{options.client_options.site}/v1/oauth/mobile/login", {
           body: {
             client_key: client.id,
             access_token: access_token,
@@ -43,29 +45,35 @@ module OmniAuth
           },
           headers: {'Content-Type' => 'application/x-www-form-urlencoded'}
         })
-        # Parse and handle response
+        parse_response(response)
       end
 
       def refresh_access_token(refresh_token)
-        response = client.request(:post, client.options[:token_url], {
+        response = client.request(:post, options.client_options.token_url, {
           body: {
             grant_type: 'refresh_token',
             refresh_token: refresh_token
           },
           auth: [client.id, client.secret]
         })
-        # Parse and handle response
+        parse_response(response)
       end
 
       def token_introspection(token)
-        response = client.request(:post, client.options[:introspect_url], {
+        response = client.request(:post, options.client_options.introspect_url, {
           body: {
             token: token,
             token_type_hint: 'access_token'
           },
           auth: [client.id, client.secret]
         })
-        # Parse and handle response
+        parse_response(response)
+      end
+
+      private
+
+      def parse_response(response)
+        response.parsed
       end
     end
   end
