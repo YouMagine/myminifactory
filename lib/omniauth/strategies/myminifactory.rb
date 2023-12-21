@@ -21,7 +21,10 @@ module OmniAuth
         }
       end
 
-      # Override necessary to deal with custom logic
+      def callback_url
+        'https://164.90.252.12/users/auth/myminifactory/callback'
+      end
+
       def request_phase
         super
       end
