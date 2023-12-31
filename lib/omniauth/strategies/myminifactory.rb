@@ -17,12 +17,11 @@ module OmniAuth
       info do
         {
           name: raw_info['username']
-          # Other user info fields...
         }
       end
 
       def callback_url
-        'https://164.90.252.12/users/auth/myminifactory/callback'
+        'https://test.youmagine.com/users/auth/myminifactory/callback'
       end
 
       def request_phase
