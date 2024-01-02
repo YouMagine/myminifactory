@@ -25,12 +25,16 @@ module OmniAuth
       end
 
       def request_phase
-        logger.info("Request Phase Omniauth")
+        logger.info("MyMiniFactory Strategy - Starting request phase.")
         super
       end
 
       def callback_phase
+        logger.info("MyMiniFactory Strategy - Starting callback phase.")
         super
+      rescue StandardError => e
+        logger.error("MyMiniFactory Strategy - Callback phase error: #{e.message}")
+        raise
       end
 
       protected
@@ -40,7 +44,11 @@ module OmniAuth
       end
 
       def raw_info
+        logger.info("MyMiniFactory Strategy - Fetching raw info.")
         @raw_info ||= access_token.get("/user").parsed
+      rescue StandardError => e
+        logger.error("MyMiniFactory Strategy - Error fetching raw info: #{e.message}")
+        raise
       end
 
       def mobile_login(access_token, device_info)
@@ -80,7 +88,14 @@ module OmniAuth
       private
 
       def parse_response(response)
+        logger.info("MyMiniFactory Strategy - Parsing response.")
         response.parsed
+      rescue JSON::ParserError => e
+        logger.error("MyMiniFactory Strategy - Response parsing error: #{e.message}")
+        raise
+      rescue StandardError => e
+        logger.error("MyMiniFactory Strategy - General error in response parsing: #{e.message}")
+        raise
       end
     end
   end
