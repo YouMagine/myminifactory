@@ -21,11 +21,12 @@ module OmniAuth
       end
 
       def callback_url
-        'https://test.youmagine.com/users/auth/myminifactory/callback'
+#        'https://test.youmagine.com/users/auth/myminifactory/callback'
+        "https://af05-153-92-40-143.ngrok-free.app"
       end
 
       def request_phase
-        logger.info("MyMiniFactory Strategy - Starting request phase.")
+        logger.info("Response: Status: #{response.status}, Body: #{response.body}")
         super
       end
 
