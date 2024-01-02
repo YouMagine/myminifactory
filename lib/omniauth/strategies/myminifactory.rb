@@ -21,12 +21,12 @@ module OmniAuth
       end
 
       def callback_url
-#        'https://test.youmagine.com/users/auth/myminifactory/callback'
+        #        'https://test.youmagine.com/users/auth/myminifactory/callback'
         "https://af05-153-92-40-143.ngrok-free.app"
       end
 
       def request_phase
-        logger.info("Response: Status: #{response.status}, Body: #{response.body}")
+        logger.info("Response: Status: #{response&.status}, Body: #{response&.body}")
         super
       end
 
@@ -46,7 +46,12 @@ module OmniAuth
 
       def raw_info
         logger.info("MyMiniFactory Strategy - Fetching raw info.")
-        @raw_info ||= access_token.get("/user").parsed
+        response = access_token.get("/user")
+        if response.status != 200
+          logger.error("MyMiniFactory Strategy - Non-successful response: Status #{response.status}, Body: #{response.body}")
+          raise "Failed to fetch user info: #{response.body}"
+        end
+        response.parsed
       rescue StandardError => e
         logger.error("MyMiniFactory Strategy - Error fetching raw info: #{e.message}")
         raise
@@ -89,8 +94,8 @@ module OmniAuth
       private
 
       def parse_response(response)
-        if response.status != 200
-          logger.error("MyMiniFactory Strategy - Non-successful response: Status #{response.status}, Body: #{response.body}")
+        if response&.status != 200
+          logger.error("MyMiniFactory Strategy - Non-successful response: Status #{response&.status}, Body: #{response.body}")
         end
         response.parsed
       end
