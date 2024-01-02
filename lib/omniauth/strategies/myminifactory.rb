@@ -25,6 +25,7 @@ module OmniAuth
       end
 
       def request_phase
+        logger.info("Request Phase Omniauth")
         super
       end
 
@@ -33,6 +34,10 @@ module OmniAuth
       end
 
       protected
+
+      def logger
+        @logger ||= Logger.new(STDOUT)
+      end
 
       def raw_info
         @raw_info ||= access_token.get("/user").parsed
