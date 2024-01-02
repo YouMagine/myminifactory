@@ -88,14 +88,10 @@ module OmniAuth
       private
 
       def parse_response(response)
-        logger.info("MyMiniFactory Strategy - Parsing response.")
+        if response.status != 200
+          logger.error("MyMiniFactory Strategy - Non-successful response: Status #{response.status}, Body: #{response.body}")
+        end
         response.parsed
-      rescue JSON::ParserError => e
-        logger.error("MyMiniFactory Strategy - Response parsing error: #{e.message}")
-        raise
-      rescue StandardError => e
-        logger.error("MyMiniFactory Strategy - General error in response parsing: #{e.message}")
-        raise
       end
     end
   end
