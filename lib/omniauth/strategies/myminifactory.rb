@@ -21,12 +21,27 @@ module OmniAuth
       end
 
       def callback_url
-        #        'https://test.youmagine.com/users/auth/myminifactory/callback'
-        "https://af05-153-92-40-143.ngrok-free.app"
+        'https://test.youmagine.com/users/auth/myminifactory/callback'
+        # "https://af05-153-92-40-143.ngrok-free.app/users/auth/myminifactory/callback"
       end
 
       def request_phase
-        logger.info("Response: Status: #{response&.status}, Body: #{response&.body}")
+        # Build the full URL for the authorization request
+        url = callback_url
+
+        # Add query parameters to the URL
+        options.authorize_params[:response_type] = 'code'
+        options.authorize_params[:redirect_uri] = callback_url
+        # Add any additional parameters you might need
+        # ...
+
+        # Generate the full authorization URL with query parameters
+        url += "?#{options.authorize_params.to_query}"
+
+        # Log the full URL
+        logger.info("Authorization URL: #{url}")
+
+        # Proceed with the regular request phase
         super
       end
 
@@ -66,7 +81,9 @@ module OmniAuth
           },
           headers: {'Content-Type' => 'application/x-www-form-urlencoded'}
         })
-        parse_response(response)
+        parsed_response = parse_response(response)
+        logger.info("Parsed Response: #{parsed_response}")
+
       end
 
       def refresh_access_token(refresh_token)
@@ -77,7 +94,8 @@ module OmniAuth
           },
           auth: [client.id, client.secret]
         })
-        parse_response(response)
+        parsed_response = parse_response(response)
+        logger.info("Parsed Response: #{parsed_response}")
       end
 
       def token_introspection(token)
@@ -88,7 +106,8 @@ module OmniAuth
           },
           auth: [client.id, client.secret]
         })
-        parse_response(response)
+        parsed_response = parse_response(response)
+        logger.info("Parsed Response: #{parsed_response}")
       end
 
       private
