@@ -25,7 +25,7 @@ module OmniAuth
       end
 
       def callback_url
-        'https://test.youmagine.com/users/auth/myminifactory/callback'
+        options.callback_url || 'https://www.example.com/url'
       end
 
       protected
