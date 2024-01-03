@@ -16,7 +16,11 @@ module OmniAuth
 
       info do
         {
-          name: raw_info['username']
+          name: raw_info['name'],  # 'name' field for the full name
+          username: raw_info['username'],
+          email: raw_info['email'],
+          profile_url: raw_info['profile_url'],
+          avatar_url: raw_info['avatar_url']
         }
       end
 
@@ -32,8 +36,6 @@ module OmniAuth
         # Add query parameters to the URL
         options.authorize_params[:response_type] = 'code'
         options.authorize_params[:redirect_uri] = callback_url
-        # Add any additional parameters you might need
-        # ...
 
         # Generate the full authorization URL with query parameters
         url += "?#{options.authorize_params.to_query}"
@@ -61,11 +63,15 @@ module OmniAuth
 
       def raw_info
         logger.info("MyMiniFactory Strategy - Fetching raw info.")
-        response = access_token.get("/user")
+
+        # Use the updated API endpoint for user information
+        response = access_token.get("https://www.myminifactory.com/api/v2/user")
+
         if response.status != 200
           logger.error("MyMiniFactory Strategy - Non-successful response: Status #{response.status}, Body: #{response.body}")
           raise "Failed to fetch user info: #{response.body}"
         end
+
         response.parsed
       rescue StandardError => e
         logger.error("MyMiniFactory Strategy - Error fetching raw info: #{e.message}")
