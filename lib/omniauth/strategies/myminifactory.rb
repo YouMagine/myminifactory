@@ -26,33 +26,6 @@ module OmniAuth
 
       def callback_url
         'https://test.youmagine.com/users/auth/myminifactory/callback'
-        # "https://af05-153-92-40-143.ngrok-free.app/users/auth/myminifactory/callback"
-      end
-
-      def request_phase
-        # Build the full URL for the authorization request
-        url = callback_url
-
-        # Add query parameters to the URL
-        options.authorize_params[:response_type] = 'code'
-        options.authorize_params[:redirect_uri] = callback_url
-
-        # Generate the full authorization URL with query parameters
-        url += "?#{options.authorize_params.to_query}"
-
-        # Log the full URL
-        logger.info("Authorization URL: #{url}")
-
-        # Proceed with the regular request phase
-        super
-      end
-
-      def callback_phase
-        logger.info("MyMiniFactory Strategy - Starting callback phase.")
-        super
-      rescue StandardError => e
-        logger.error("MyMiniFactory Strategy - Callback phase error: #{e.message}")
-        raise
       end
 
       protected
@@ -62,19 +35,15 @@ module OmniAuth
       end
 
       def raw_info
-        logger.info("MyMiniFactory Strategy - Fetching raw info.")
-
         # Use the updated API endpoint for user information
         response = access_token.get("https://www.myminifactory.com/api/v2/user")
 
         if response.status != 200
-          logger.error("MyMiniFactory Strategy - Non-successful response: Status #{response.status}, Body: #{response.body}")
           raise "Failed to fetch user info: #{response.body}"
         end
 
         response.parsed
       rescue StandardError => e
-        logger.error("MyMiniFactory Strategy - Error fetching raw info: #{e.message}")
         raise
       end
 
@@ -88,8 +57,6 @@ module OmniAuth
           headers: {'Content-Type' => 'application/x-www-form-urlencoded'}
         })
         parsed_response = parse_response(response)
-        logger.info("Parsed Response: #{parsed_response}")
-
       end
 
       def refresh_access_token(refresh_token)
@@ -101,7 +68,6 @@ module OmniAuth
           auth: [client.id, client.secret]
         })
         parsed_response = parse_response(response)
-        logger.info("Parsed Response: #{parsed_response}")
       end
 
       def token_introspection(token)
@@ -113,7 +79,6 @@ module OmniAuth
           auth: [client.id, client.secret]
         })
         parsed_response = parse_response(response)
-        logger.info("Parsed Response: #{parsed_response}")
       end
 
       private
