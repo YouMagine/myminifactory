@@ -24,6 +24,12 @@ module OmniAuth
         }
       end
 
+      def authorize_params
+        super.tap do |params|
+          params[:google_login] = 'true'
+        end
+      end
+
       def callback_url
         options.callback_url || 'https://www.example.com/url'
       end
