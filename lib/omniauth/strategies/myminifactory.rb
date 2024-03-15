@@ -30,6 +30,7 @@ module OmniAuth
           csrf_token = session['omniauth.state']
           logger.info("CSRF Token (state) generated: #{csrf_token}")
           logger.debug("Session contents after generating CSRF Token: #{session.inspect}")
+          verify_rails_csrf_token!
         end
       end
 
@@ -39,6 +40,7 @@ module OmniAuth
         csrf_token_expected = session.delete('omniauth.state')
         logger.info("CSRF Token (state) received: #{csrf_token_sent}")
         logger.info("CSRF Token (state) expected: #{csrf_token_expected}")
+        logger.info("CSRF Token matches: #{csrf_token_sent == csrf_token_expected}")
         logger.debug("Request params: #{request.params.inspect}")
 
         if csrf_token_expected != csrf_token_sent
@@ -54,6 +56,22 @@ module OmniAuth
       end
 
       protected
+
+      def verify_rails_csrf_token!
+        # Fetch the CSRF token from the session
+        rails_csrf_token = session[:_csrf_token]
+        # Fetch the CSRF token sent in the form
+        form_csrf_token = request.params['authenticity_token']
+
+        logger.info("Rails CSRF Token from session: #{rails_csrf_token}")
+        logger.info("Rails CSRF Token from form: #{form_csrf_token}")
+
+        # Check if the tokens match
+        if form_csrf_token.blank? || form_csrf_token != rails_csrf_token
+          logger.error("Rails CSRF Token mismatch or missing")
+          fail!(:csrf_detected, CallbackError.new(:csrf_detected, "Rails CSRF token mismatch or missing"))
+        end
+      end
 
       def logger
         @logger ||= Logger.new(STDOUT)
