@@ -14,7 +14,7 @@ module OmniAuth
 
       uid do
         logger.info("UID Raw Info: #{raw_info.inspect}")
-        raw_info['user_id']
+        raw_info['username']
       end
 
       info do
