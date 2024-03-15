@@ -29,14 +29,17 @@ module OmniAuth
           params[:google_login] = 'true'
           csrf_token = session['omniauth.state']
           logger.info("CSRF Token (state) generated: #{csrf_token}")
+          logger.debug("Session contents after generating CSRF Token: #{session.inspect}")
         end
       end
 
       def callback_phase
+        logger.debug("Session contents at start of callback_phase: #{session.inspect}")
         csrf_token_sent = request.params['state']
         csrf_token_expected = session.delete('omniauth.state')
         logger.info("CSRF Token (state) received: #{csrf_token_sent}")
         logger.info("CSRF Token (state) expected: #{csrf_token_expected}")
+        logger.debug("Request params: #{request.params.inspect}")
 
         if csrf_token_expected != csrf_token_sent
           logger.error("CSRF Token mismatch: expected #{csrf_token_expected}, got #{csrf_token_sent}")
@@ -59,10 +62,7 @@ module OmniAuth
       def raw_info
         # Use the updated API endpoint for user information
         response = access_token.get("https://www.myminifactory.com/api/v2/user")
-
-        if response.status != 200
-          raise "Failed to fetch user info: #{response.body}"
-        end
+        log_response(response, "Fetching user info")
 
         response.parsed
       rescue StandardError => e
@@ -106,10 +106,16 @@ module OmniAuth
       private
 
       def parse_response(response)
-        if response&.status != 200
-          logger.error("MyMiniFactory Strategy - Non-successful response: Status #{response&.status}, Body: #{response.body}")
-        end
+        log_response(response, "Parsing response")
         response.parsed
+      end
+
+      def log_response(response, action)
+        if response&.status != 200
+          logger.error("#{action} - Non-successful response: Status #{response&.status}, Body: #{response.body}")
+        else
+          logger.debug("#{action} - Response: #{response.parsed.inspect}")
+        end
       end
     end
   end
