@@ -27,7 +27,23 @@ module OmniAuth
       def authorize_params
         super.tap do |params|
           params[:google_login] = 'true'
+          csrf_token = session['omniauth.state']
+          logger.info("CSRF Token (state) generated: #{csrf_token}")
         end
+      end
+
+      def callback_phase
+        csrf_token_sent = request.params['state']
+        csrf_token_expected = session.delete('omniauth.state')
+        logger.info("CSRF Token (state) received: #{csrf_token_sent}")
+        logger.info("CSRF Token (state) expected: #{csrf_token_expected}")
+
+        if csrf_token_expected != csrf_token_sent
+          logger.error("CSRF Token mismatch: expected #{csrf_token_expected}, got #{csrf_token_sent}")
+          fail!(:csrf_detected, CallbackError.new(:csrf_detected, "CSRF token mismatch"))
+        end
+
+        super
       end
 
       def callback_url
