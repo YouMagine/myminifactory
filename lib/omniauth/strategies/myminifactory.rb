@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 require 'omniauth-oauth2'
 
 module OmniAuth
@@ -14,7 +12,10 @@ module OmniAuth
         introspect_url: '/v1/oauth/introspect'
       }
 
-      uid { raw_info['user_id'] }
+      uid do
+        logger.info("UID Raw Info: #{raw_info.inspect}")
+        raw_info['user_id']
+      end
 
       info do
         {
@@ -28,17 +29,23 @@ module OmniAuth
 
       def authorize_params
         super.tap do |params|
-          # Custom parameters can be added here if required by the OAuth provider
+          logger.info("Authorize Params: #{params.inspect}")
           session['omniauth.state'] = params[:state] if params[:state]
         end
       end
 
       def callback_phase
+        logger.info("Entering Callback Phase")
         super
+      rescue StandardError => e
+        logger.error("Callback Phase Error: #{e.message}")
+        raise
       end
 
       def callback_url
-        options.callback_url || super
+        url = options.callback_url || super
+        logger.info("Callback URL: #{url}")
+        url
       end
 
       protected
@@ -48,7 +55,13 @@ module OmniAuth
       end
 
       def raw_info
-        @raw_info ||= access_token.get("https://www.myminifactory.com/api/v2/user").parsed
+        logger.info("Fetching Raw Info")
+        @raw_info ||= access_token.get("https://www.myminifactory.com/api/v2/user").parsed.tap do |data|
+          logger.info("Raw Info Received: #{data.inspect}")
+        end
+      rescue StandardError => e
+        logger.error("Error Fetching Raw Info: #{e.message}")
+        raise
       end
     end
   end
