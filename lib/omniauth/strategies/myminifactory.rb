@@ -24,22 +24,6 @@ module OmniAuth
         }
       end
 
-      def callback_phase
-        # Verifies CSRF token
-        csrf_token_verified = OmniAuth::RailsCsrfProtection::TokenVerifier.new.call(env)
-        return fail!(:csrf_detected, CallbackError.new(:csrf_detected, 'CSRF detected')) unless csrf_token_verified
-
-        # Verifies state token
-        state_token_valid = session.delete('omniauth.state') == request.params['state']
-        return fail!(:csrf_detected, CallbackError.new(:csrf_detected, 'CSRF detected')) unless state_token_valid
-
-        # Continues with the regular callback phase processing if both tokens are valid
-        super
-      rescue StandardError => e
-        # Handle exceptions
-        fail!(e)
-      end
-
       def authorize_params
         super.tap do |params|
           params[:google_login] = 'true'
